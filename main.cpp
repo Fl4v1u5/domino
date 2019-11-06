@@ -6,25 +6,23 @@
 
 using namespace std;
 
-string generarFicha(short int limite);
+string muestraFicha(short int numero1, short int numero2);
 
-string muestraFicha(string ficha);
-
-void mostrarTablero(string fichaJugador, string tablero, short int numColocadas, short int numRobadas);
+void mostrarTablero(tFichasJugador fichasJugador, string tablero, short int numColocadas, short int numRobadas);
 
 int mostrarMenu();
 
-bool ejecutarOpcion(short int opcionMenu, string& fichaJugador, string& tablero, short int& numColocadas, short int& numRobadas, short int& limite);
+bool ejecutarOpcion(short int opcionMenu, tFichasJugador& fichasJugador, string& tablero, short int& numColocadas, short int& numRobadas, short int& limite);
 
-void ponerFichaDer(string& fichaJugador, string& tablero, short int& numColocadas, short int limite);
+void ponerFichaDer(tFichasJugador& fichasJugador, string& tablero, short int& numColocadas, short int limite);
 
-bool puedePonerDer(string fichaJugador, string tablero);
+bool puedePonerDer(tFichasJugador fichasJugador, string tablero);
 
-void ponerFichaIzq(string& fichaJugador, string& tablero, short int& numColocadas, short int limite);
+void ponerFichaIzq(tFichasJugador& fichasJugador, string& tablero, short int& numColocadas, short int limite);
 
-bool puedePonerIzq(string fichaJugador, string tablero);
+bool puedePonerIzq(tFichasJugador fichasJugador, string tablero);
 
-void robarFicha(string& fichaJugador, string tablero, short int& numRobadas, short int limite);
+void robarFicha(tFichasJugador& fichasJugador, string tablero, short int& numRobadas, short int limite);
 
 void cambiarLimite(short int& limite); //Funcion peligrosa, el limite puede ser cambiado en mitad de la partida sin que esto
 //haga reiniciar la partida, lo cual cambia un poco la experiencia de juego. Esto es a proposito, no obligo a reiniciar la partida
@@ -32,9 +30,9 @@ void cambiarLimite(short int& limite); //Funcion peligrosa, el limite puede ser 
 
 string girarFicha(string ficha);
 
-void guardarPartida(string fichaJugador, string tablero, short int numColocadas, short int numRobadas);
+void guardarPartida(tFichasJugador fichasJugador, string tablero, short int numColocadas, short int numRobadas);
 
-void cargarPartida(string& fichaJugador, string& tablero, short int& numColocadas, short int& numRobadas);
+void cargarPartida(tFichasJugador& fichasJugador, string& tablero, short int& numColocadas, short int& numRobadas);
 
 /*Al tener como numero maximo en una ficha una cantidad variable, el numero de fichas es también
 variable y por lo tanto no puede ser una const int numFichas = 28; Existe una manera muy sencilla de
@@ -43,12 +41,15 @@ tambien estos bucles para explotar la naturaleza variable del numero total de fi
 Por eso no utilizo esas dos lineas de código
 EDIT: No se puede usar una variable como tamaño de un array así que me veo obligado a crear varias constantes...*/
 
-const int numFichas6 = 28, numFichas7 = 36, numFichas8 = 45, numFichas9 = 55;
+const int numFichas = 55;
 
-typedef short int tArray6[numFichas6], tArray7[numFichas7], tArray8[numFichas8], tArray9[numFichas9];
+typedef short int tArray[numFichas];
 
-template <typename tipoArray>
-void generarPozo(tipoArray &pozo1, tipoArray &pozo2, short int limiteMaximo);
+typedef string tFichasJugador[7];
+
+void generarPozo(tArray& pozo1, tArray& pozo2, short int limiteMaximo);
+
+void desordenarPozo(tArray& pozo1, tArray& pozo2);
 
 //int calcularNumFichas(short int limiteMaximo);
 
@@ -61,44 +62,20 @@ int main() {
 	/*Uso ifs y repito funciones por que el numero total de fichas es variable y no
 	se puede usar la funcion calcularNumFichas() para darle valor al tamaño ya que no es constante.
 	Por esto hay todos estos ifs y for...*/
-	if (limiteMaximo == 6) {
-		tArray6 pozo1, pozo2;
-		generarPozo<tArray6>(pozo1, pozo2, limiteMaximo);
-		bool fichasUsadas[numFichas6];
-		for (int i = 0; i < numFichas6; i++) {
-			fichasUsadas[i] = false;
-		}
-	}
-	else if (limiteMaximo == 7) {
-		tArray7 pozo1, pozo2;
-		generarPozo<tArray7>(pozo1, pozo2, limiteMaximo);
-		bool fichasUsadas[numFichas7];
-		for (int i = 0; i < numFichas7; i++) {
-			fichasUsadas[i] = false;
-		}
-	}
-	else if (limiteMaximo == 8) {
-		tArray8 pozo1, pozo2;
-		generarPozo<tArray8>(pozo1, pozo2, limiteMaximo);
-		bool fichasUsadas[numFichas8];
-		for (int i = 0; i < numFichas8; i++) {
-			fichasUsadas[i] = false;
-		}
-	}
-	else if (limiteMaximo == 9) {
-		tArray9 pozo1, pozo2;
-		generarPozo<tArray9>(pozo1, pozo2, limiteMaximo);
-		bool fichasUsadas[numFichas9] ;
-		for (int i = 0; i < numFichas9; i++) {
-			fichasUsadas[i] = false;
-		}
-	}
+	tArray pozo1, pozo2;
+	generarPozo(pozo1, pozo2, limiteMaximo);
+	desordenarPozo(pozo1, pozo2);
+	short int numUsadas = 0;
 
 	//Valores estáticos
 	bool salir = false;
 	srand(time(NULL));
-	string fichaJugador = muestraFicha(generarFicha(limiteMaximo));
-	string tablero = muestraFicha(generarFicha(limiteMaximo));
+	tFichasJugador fichaJugador;
+	for (int i = 0; i < 7; i++) {
+		fichaJugador[i] = muestraFicha(pozo1[i], pozo2[i]);
+	}
+	string tablero = muestraFicha(pozo1[numUsadas], pozo2[numUsadas]);
+	numUsadas = 7;
 	short int numColocadas = 0;
 	short int numRobadas = 0;
 	int opcion = 0;
@@ -113,27 +90,30 @@ int main() {
 	return 0;
 }
 
-string generarFicha(short int limite) {
-	string ficha = "x-x";
-	ficha[0] = '0' + rand() % (limite + 1);
-	ficha[2] = '0' + rand() % (limite + 1);
-
-	return ficha;
-}
-
-string muestraFicha(string ficha) {
-	string fichaMostrada = "|" + ficha + "|";
+string muestraFicha(short int numero1, short int numero2) {
+	string fichaMostrada = "|";
+	fichaMostrada += '0' + numero1;
+	fichaMostrada += '-';
+	fichaMostrada += '0' + numero2;
+	fichaMostrada = "|";
 	return fichaMostrada;
 }
 
-void mostrarTablero(string fichaJugador, string tablero, short int numColocadas, short int numRobadas) {
+void mostrarTablero(tFichasJugador fichasJugador, string tablero, short int numColocadas, short int numRobadas) {
 	cout << "--------------------" << endl;
 	cout << "|     TABLERO     |" << endl;
 	cout << "--------------------" << endl;
 	cout << tablero << endl;
 	cout << "Fichas colocadas: " << numColocadas << " - ";
 	cout << "Fichas robadas: " << numRobadas << endl;
-	cout << "Ficha jugador: " << fichaJugador << endl;
+	cout << "Ficha jugador: " << endl;
+	for (int i = 0; i < fichasJugador->size(); i++) {
+		if ((i + 1) % 4 == 0) {
+			cout << endl;
+		}
+		cout << fichasJugador[i] << " ";
+	}
+	cout << endl;
 }
 
 int mostrarMenu() {
@@ -145,9 +125,8 @@ int mostrarMenu() {
 	cout << "[1] Colocar ficha a la derecha" << endl;
 	cout << "[2] Colocar ficha a la izquierda" << endl;
 	cout << "[3] Robar ficha nueva" << endl;
-	cout << "[4] Cambiar limite maximo de numero" << endl;
-	cout << "[5] Guardar partida" << endl;
-	cout << "[6] Cargar partida" << endl;
+	cout << "[4] Guardar partida" << endl;
+	cout << "[5] Cargar partida" << endl;
 	cout << "[0] Salir" << endl << endl;
 	cout << "Elija opcion: ";
 
@@ -157,7 +136,7 @@ int mostrarMenu() {
 	return opcion;
 }
 
-bool ejecutarOpcion(short int opcionMenu, string& fichaJugador, string& tablero, short int& numColocadas, short int& numRobadas, short int& limite) {
+bool ejecutarOpcion(short int opcionMenu, tFichasJugador& fichaJugador, string& tablero, short int& numColocadas, short int& numRobadas, short int& limite) {
 	bool salir = false;
 
 	switch (opcionMenu) {
@@ -179,16 +158,16 @@ bool ejecutarOpcion(short int opcionMenu, string& fichaJugador, string& tablero,
 	return salir;
 }
 
-void ponerFichaDer(string& fichaJugador, string& tablero, short int& numColocadas, short int limite) {
-	if (puedePonerDer(fichaJugador, tablero)) {
-		if (tablero[tablero.size() - 2] == fichaJugador[1]) {
-			tablero += fichaJugador;
+void ponerFichaDer(tFichasJugador& fichasJugador, string& tablero, short int& numColocadas, short int limite) {
+	if (puedePonerDer(fichasJugador, tablero)) {
+		if (tablero[tablero.size() - 2] == fichasJugador[1]) {
+			tablero += fichasJugador;
 		}
 		else {
-			tablero += girarFicha(fichaJugador);
+			tablero += girarFicha(fichasJugador);
 		}
 		numColocadas++;
-		fichaJugador = muestraFicha(generarFicha(limite));
+		fichasJugador = muestraFicha(generarFicha(limite));
 	}
 	else {
 		cout << "ERROR! No puedes colocar la ficha a la derecha!" << endl;
@@ -304,8 +283,7 @@ void cargarPartida(string& fichaJugador, string& tablero, short int& numColocada
 	else cout << "ERROR. No se pudo cargar partida!" << endl;
 }
 
-template <typename tipoArray>
-void generarPozo(tipoArray& pozo1, tipoArray& pozo2, short int limiteMaximo) {
+void generarPozo(tArray& pozo1, tArray& pozo2, short int limiteMaximo) {
 	int posicion = 0;
 	for (int i = 0; i <= limiteMaximo; i++) {
 		for (int j = 0; j <= i; j++) {
@@ -315,6 +293,24 @@ void generarPozo(tipoArray& pozo1, tipoArray& pozo2, short int limiteMaximo) {
 		}
 	}
 }
+
+void desordenarPozo(tArray& pozo1, tArray& pozo2) {
+	int ind1, ind2;
+	short int _tmp1, _tmp2;
+	for (int i = 0; i < 1000; i++) {
+		ind1 = rand() % numFichas;
+		ind2 = rand() % numFichas;
+		if (ind1 != ind2) {
+			_tmp1 = pozo1[ind1];
+			_tmp2 = pozo2[ind1];
+			pozo1[ind1] = pozo1[ind2];
+			pozo2[ind1] = pozo2[ind2];
+			pozo1[ind2] = _tmp1;
+			pozo2[ind2] = _tmp2;
+		}
+	}
+}
+
 
 /*int calcularNumFichas(short int limiteMaximo) {
 	int numFichas = 0;
