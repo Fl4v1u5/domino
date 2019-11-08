@@ -111,7 +111,7 @@ void mostrarTablero(tFichasJugador fichasJugador, string tablero, short int numC
 	cout << tablero << endl;
 	cout << "Fichas colocadas: " << numColocadas << " - ";
 	cout << "Fichas robadas: " << numRobadas << endl;
-	cout << "Ficha jugador: " << endl;
+	cout << "Fichas del jugador: " << endl;
 	for (int i = 0; i < numFichasJugador; i++) {
 		if ((i + 1) % 4 == 0) {
 			cout << endl;
