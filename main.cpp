@@ -309,24 +309,15 @@ void cargarPartida(tFichasJugador& fichasJugador, string& tablero, short int& nu
 	string linea;
 	ifstream partida(nombrePartida);
 	if (partida.is_open()) {
-		while (getline(partida, linea)) {
-			if (i == 0) {
-				numFichasJugador = stoi(linea);
-			}
-			else if (i - 1 < numFichasJugador) {
-				fichasJugador[i - 1] = linea;
-			}
-			else if (i == numFichasJugador + 1) {
-				tablero = linea;
-			}
-			else if (i == numFichasJugador + 2) {
-				numColocadas = stoi(linea);
-			}
-			else if (i == numFichasJugador + 3) {
-				numRobadas = stoi(linea);
-			}
-			i++;
+		partida >> numFichasJugador;
+		while(i < numFichasJugador) {
+			partida >> fichasJugador[i];
+			i++
 		}
+		partida >> tablero;
+		partida >> numColocadas;
+		partida >> numRobadas;
+		
 		partida.close();
 	}
 	else cout << "ERROR. No se pudo cargar partida!" << endl;
